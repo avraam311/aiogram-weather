@@ -8,7 +8,7 @@ class Cache:
                                  decode_responses=True)
 
     def set_city(self, city: str, info: str):
-        self.cache.set(city, info)
+        self.cache.set(city, info, ex=3600)
 
     def get_city(self, city: str):
         response = self.cache.get(city)

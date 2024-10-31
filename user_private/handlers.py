@@ -23,7 +23,7 @@ async def start_command(message):
 
 @user_router.message(Command('weather'))
 async def weather_command(message):
-    city = message.text[8:].split()
+    city = ''.join(message.text[8:].split())
     if not city:
         await message.reply(CITY)
         return
@@ -37,15 +37,17 @@ async def weather_command(message):
             response = await client.get(config.weather_api_url, params={
                 'q': city,
                 'appid': config.weather_api_key,
-                'units': 'metric'
+                'units': 'metric',
+                'lang': 'ru',
             })
 
         if response.status_code == 200:
             data = response.json()
             temp = data['main']['temp']
             description = data['weather'][0]['description']
-            result = f"Погода в городе {city} равно {temp}°C.\n\n Подробности: {description}."
+            result = f"Погода в городе {city} равна {temp}°C.\n\nПодробности: {description}."
             redis_db.set_city(city, result)
             await message.answer(result)
         else:
             await message.answer(NOT_FOUND)
+            return

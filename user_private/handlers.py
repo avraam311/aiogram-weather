@@ -2,6 +2,7 @@ import httpx
 
 from aiogram import Router
 from aiogram.filters import CommandStart, Command
+from aiogram.types import Message
 
 from constants import START, CITY, NOT_FOUND
 from cache import Cache
@@ -17,12 +18,12 @@ redis_db = Cache(username=config.redis_username, password=config.redis_password,
 
 
 @user_router.message(CommandStart())
-async def start_command(message):
+async def start_command(message: Message):
     await message.reply(START)
 
 
 @user_router.message(Command('weather'))
-async def weather_command(message):
+async def weather_command(message: Message):
     city = ''.join(message.text[8:].split())
     if not city:
         await message.reply(CITY)

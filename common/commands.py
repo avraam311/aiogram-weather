@@ -2,6 +2,6 @@ from aiogram.types import BotCommand
 
 
 private = [
-    BotCommand(command='start', description='Запустить бота⭐'),
-    BotCommand(command='weather', description='Узнать погоду☁'),
+    BotCommand(command='city', description='Указать город'),
+    BotCommand(command='weather_now', description='Погода сейчас'),
 ]

@@ -1,16 +1,21 @@
-from django.db import models
+import redis
+from django.conf import settings
+from cache import Cache
+import config
+
+config = config.Config()
 
 
-class BotSettings(models.Model):
-    weather_api_key = models.CharField(max_length=255)
+class UserCity:
+    def __init__(self):
+        self.redis_client = redis.Redis(username=config.redis_username, password=config.redis_password,
+                                        host=config.redis_host, port=config.redis_port, db=config.redis_db)
 
-    def __str__(self):
-        return f"Bot settings"
+    def set_city(self, user_id, city):
+        self.redis_client.set(user_id, city)
 
+    def get_city(self, user_id):
+        return self.redis_client.get(user_id)
 
-class WeatherAPIKey(models.Model):
-    key = models.CharField(max_length=255)
-
-
-class City(models.Model):
-    name = models.CharField(max_length=255)
+    def delete_city(self, user_id):
+        self.redis_client.delete(user_id)

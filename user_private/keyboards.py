@@ -5,4 +5,4 @@ cancel = get_keyboard('Отмена')
 
 city = get_keyboard("Указать город")
 
-weather = get_keyboard("Поменять город", "Погода сейчас",)
+weather = get_keyboard("Поменять город", "Погода сейчас", "Погода на 5 дней")

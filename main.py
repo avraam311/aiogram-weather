@@ -8,7 +8,6 @@ from aiogram.enums import ParseMode
 
 from constants import SHORT_DESCRIPTION, DESCRIPTION
 from user_private.handlers import user_router
-from admin_private.handlers import admin_router
 from common.commands import private
 import config
 
@@ -19,7 +18,7 @@ bot = Bot(token=config.bot_token, default=DefaultBotProperties(parse_mode=ParseM
 
 dp = Dispatcher()
 
-dp.include_routers(user_router, admin_router)
+dp.include_routers(user_router)
 
 
 async def on_startup():

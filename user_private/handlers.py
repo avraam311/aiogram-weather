@@ -20,7 +20,7 @@ redis_db = Cache(username=config.redis_username, password=config.redis_password,
                  host=config.redis_host, port=config.redis_port, db=config.redis_db)
 
 
-######################FSM машина для указания города########################
+# FSM машина для указания города########################
 class Weather(StatesGroup):
     set_city = State()
     change_city = State()
@@ -57,14 +57,11 @@ async def add_city(message: Message, state: FSMContext):
             temp = data['main']['temp']
             description = data['weather'][0]['description']
             result = f"Погода в городе {city} равна {temp}°C.\n\nПодробности: {description}."
-            redis_db.set_info_a_day(city, data)
             await message.answer(result,
                                  reply_markup=kb.weather)
             await state.clear()
-            return
         else:
             await message.answer(NOT_FOUND)
-            return
 
 
 # ловим некоррекный ввод
@@ -75,7 +72,7 @@ async def error(message: Message):
 ################################
 
 
-######################FSM машина для изменения города########################
+# FSM машина для изменения города########################
 @user_router.message(StateFilter(None), F.text == "Поменять город")
 @user_router.message(StateFilter(None), Command('city'))
 async def f_city(message: Message, state: FSMContext):
@@ -107,7 +104,6 @@ async def add_city(message: Message, state: FSMContext):
             temp = data['main']['temp']
             description = data['weather'][0]['description']
             result = f"Погода в городе {city} равна {temp}°C.\n\nПодробности: {description}."
-            redis_db.set_info_a_day(city, data)
             await message.answer(result,
                                  reply_markup=kb.weather)
             await state.clear()
@@ -134,29 +130,50 @@ async def f_weather_now(message: Message):
         await message.answer(NOT_SET)
         return
 
-    info = redis_db.get_info_a_day(city)
+    async with httpx.AsyncClient() as client:
+        response_a_day = await client.get(config.weather_api_url, params={
+            'q': city,
+            'appid': config.weather_api_key,
+            'units': 'metric',
+            'lang': 'ru',
+        })
+        if response_a_day.status_code == 200:
+            data = response_a_day.json()
+            await message.answer(str(data),
+                                 reply_markup=kb.weather)
+        else:
+            await message.answer(NOT_FOUND)
 
-    if not info:
-        async with httpx.AsyncClient() as client:
-            response_a_day = await client.get(config.weather_api_url, params={
-                'q': city,
-                'appid': config.weather_api_key,
-                'units': 'metric',
-                'lang': 'ru',
-            })
-            if response_a_day.status_code == 200:
-                data = response_a_day.json()
-                temp = data['main']['temp']
-                description = data['weather'][0]['description']
-                result = f"Погода в городе \"{city}\" равна {temp}°C.\n\nПодробности: {description}."
-                redis_db.set_info_a_day(city, data)
-                await message.answer(result,
+
+@user_router.message(F.text == "Погода на 5 дней")
+@user_router.message(Command('weather_5_days'))
+async def f_weather_5_days(message: Message):
+    city = redis_db.get_city(message.from_user.id)
+
+    if not city:
+        await message.answer(NOT_SET)
+        return
+
+    async with httpx.AsyncClient() as client:
+        response_a_day = await client.get(config.forecast_api_url, params={
+            'q': city,
+            'appid': config.weather_api_key,
+            'units': 'metric',
+            'lang': 'ru',
+            'cnt': 40,
+        })
+        if response_a_day.status_code == 200:
+            data = response_a_day.json()
+            days = ("Сегодня", "Завтра", "Послезавтра", "На 4-й день", "На 5-й день")
+            for i in range(5):
+                forecast_days = data['list']
+                await message.answer(f"{days[i]}: \n\n"
+                                     f"Температура: {forecast_days[i]['main']['temp']} °C, \n"
+                                     f"Ощущается: {forecast_days[i]['main']['feels_like']} °C, \n"
+                                     f"Влажность: {forecast_days[i]['main']['humidity']} г/м³, \n"
+                                     f"Погода: {forecast_days[i]['weather'][0]['main']}, \n"
+                                     f"Подробности: {forecast_days[i]['weather'][0]['description']}, \n"
+                                     f"Скорость ветра: {forecast_days[i]['wind']['speed']}м/с.",
                                      reply_markup=kb.weather)
-                return
-            else:
-                await message.answer(NOT_FOUND)
-                return
-
-    result = f"Погода в городе \"{city}\" равна {info['temp']}°C.\n\nПодробности: {info['description']}."
-    redis_db.set_city(city, result)
-    await message.answer(result)
+        else:
+            await message.answer(NOT_FOUND)

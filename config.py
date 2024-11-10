@@ -12,6 +12,7 @@ class Config:
 
         self.weather_api_key: str = os.getenv('WEATHER_API_KEY')
         self.weather_api_url: str = os.getenv('WEATHER_API_URL')
+        self.forecast_api_url: str = os.getenv('FORECAST_API_URL')
 
         self.redis_username: str = os.getenv('REDIS_USERNAME')
         self.redis_password: str = os.getenv('REDIS_PASSWORD')
@@ -29,6 +30,8 @@ class Config:
             raise ValueError("WEATHER_API_KEY не установлен")
         if not self.weather_api_url:
             raise ValueError("WEATHER_API_URL не установлен")
+        if not self.forecast_api_url:
+            raise ValueError("FORECAST_API_URL не установлен")
 
         if not self.redis_username:
             raise ValueError("REDIS_USERNAME не установлен")

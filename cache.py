@@ -13,14 +13,3 @@ class Cache:
     def get_city(self, user_id: int):
         response = self.cache.get(str(user_id))
         return response
-
-    def del_city(self, user_id: int):
-        self.cache.delete(str(user_id))
-
-    def set_info_a_day(self, city: str, info: dict):
-        self.cache.hset(city+'a_day', mapping={'temp': 1,})
-        # self.cache.expire(city+'a_day', 3600)
-
-    def get_info_a_day(self, city: str):
-        response = dict(self.cache.hgetall(city))
-        return response

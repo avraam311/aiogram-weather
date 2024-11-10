@@ -1,7 +1,6 @@
 services:
   app:
     build: .
-    command: python -m unittest weather_test.py
     restart: unless-stopped
     env_file:
       - .env
@@ -11,14 +10,6 @@ services:
       - redis
     networks:
       - my-network
-
-#  django:
-#    build: ./admin
-#    command: python manage.py test
-#    depends_on:
-#      - redis
-#    networks:
-#      - my-network
 
   redis:
     image: redis:latest

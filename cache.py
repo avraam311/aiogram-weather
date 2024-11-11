@@ -13,3 +13,18 @@ class Cache:
     def get_city(self, user_id: int):
         response = self.cache.get(str(user_id))
         return response
+
+    def set_weather_now(self, city: str, data: dict):
+        self.cache.hset(city, mapping=data)
+        self.cache.expire('weather_now', 3600)
+
+    def get_weather_now(self, city: str):
+        response = self.cache.hgetall(city)
+        return response
+
+    def set_weather_5_days(self, city: str, data: str):
+        self.cache.set(city+'5', data, ex=86400)
+
+    def get_weather_5_days(self, city: str):
+        response = self.cache.get(city+'5')
+        return response

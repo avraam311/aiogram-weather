@@ -5,3 +5,4 @@ __pycache__
 user_private/__pycache__
 common/__pycache__
 unittest/__pycache__
+redis-data/*

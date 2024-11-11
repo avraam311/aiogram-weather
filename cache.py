@@ -16,7 +16,7 @@ class Cache:
 
     def set_weather_now(self, city: str, data: dict):
         self.cache.hset(city, mapping=data)
-        self.cache.expire('weather_now', 3600)
+        self.cache.expire(city, 3600)
 
     def get_weather_now(self, city: str):
         response = self.cache.hgetall(city)
